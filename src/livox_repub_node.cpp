@@ -15,7 +15,7 @@ public:
                 "/livox/lidar", 10,
                 std::bind(&LivoxRepub::LivoxMsgCbk, this, std::placeholders::_1));
         pub_pcl_out_ = create_publisher<sensor_msgs::msg::PointCloud2>(
-                "/livox_points", 10);
+                "/livox/points", 10);
     }
 
 private:
