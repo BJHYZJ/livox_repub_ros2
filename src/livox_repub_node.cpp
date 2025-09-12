@@ -4,8 +4,23 @@
 #include <pcl/point_types.h>
 #include <pcl_conversions/pcl_conversions.h>
 
-// Point type definition (assuming PointXYZINormal is preferred)
-typedef pcl::PointXYZINormal PointType;
+// Point type definition with timestamp for deskewing
+struct PointXYZIT {
+    PCL_ADD_POINT4D;
+    PCL_ADD_INTENSITY;
+    float time;
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+} EIGEN_ALIGN16;
+
+POINT_CLOUD_REGISTER_POINT_STRUCT(PointXYZIT,
+    (float, x, x)
+    (float, y, y)
+    (float, z, z)
+    (float, intensity, intensity)
+    (float, time, time)
+)
+
+typedef PointXYZIT PointType;
 
 class LivoxRepub : public rclcpp::Node {
 public:
@@ -34,8 +49,8 @@ private:
             float s = livox_msg->points[i].offset_time / (float) livox_msg->points.back().offset_time;
             pt.intensity = livox_msg->points[i].line + livox_msg->points[i].reflectivity / 10000.0;
 
-            // Calculate curvature (adjust calculation as needed)
-            pt.curvature = s * 0.1;
+            // Set timestamp for deskewing (normalized to 0-1 range)
+            pt.time = s;
 
             pcl_in->push_back(pt);
         }
@@ -45,7 +60,9 @@ private:
         pcl::toROSMsg(*pcl_in, pcl_ros_msg);
 
         // Set timestamp based on LiDAR message
-        //pcl_ros_msg.header.stamp = get_ros_time(livox_msg->timebase);
+        // rclcpp::Time ros_time(livox_msg->timebase);
+        // pcl_ros_msg.header.stamp = ros_time;
+        // Convert timebase (nanoseconds) to ROS time
         pcl_ros_msg.header.stamp = this->get_clock()->now();
 
         pcl_ros_msg.header.frame_id = livox_msg->header.frame_id;
