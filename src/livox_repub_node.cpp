@@ -27,7 +27,7 @@ public:
     LivoxRepub() : Node("livox_repub") {
         // Initialize subscriber and publisher
         sub_livox_msg_ = create_subscription<livox_ros_driver2::msg::CustomMsg>(
-                "/livox/lidar", 10,
+                "/livox/lidar", 50,
                 std::bind(&LivoxRepub::LivoxMsgCbk, this, std::placeholders::_1));
         pub_pcl_out_ = create_publisher<sensor_msgs::msg::PointCloud2>(
                 "/livox/points", 10);
